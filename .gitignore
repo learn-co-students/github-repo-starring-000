@@ -14,7 +14,7 @@ xcuserdata
 *.moved-aside
 DerivedData
 Docs
-FISConstants.*
+FISConstants.m
 *.hmap
 *.ipa
 *.xcuserstate
