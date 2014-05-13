@@ -12,7 +12,10 @@
 #import <Expecta.h>
 #import <OHHTTPStubs.h>
 #import "FISGithubRepository.h"
-
+#define MOCKITO_SHORTHAND
+#import <OCMockito.h>
+#import "FISGithubAPIClient.h"
+#import <Swizzlean.h>
 
 SpecBegin(FISReposDataStore)
 
@@ -80,6 +83,81 @@ describe(@"FISReposDataStore", ^{
                 expect(dataStore.repositories).to.equal(correctRepos);
                 done();
             }];
+        });
+    });
+
+    describe(@"toggleStar Method", ^{
+        __block Swizzlean *starRepoSwizzle;
+        __block Swizzlean *unstarRepoSwizzle;
+        __block Swizzlean *checkStarSwizzle;
+        __block BOOL calledStarRepo;
+        __block BOOL calledUnStarRepo;
+        __block BOOL calledCheckStarRepo;
+        __block FISGithubRepository *mockedRepo;
+
+        beforeAll(^{
+            mockedRepo = mock([FISGithubRepository class]);
+            [given(mockedRepo.fullName) willReturn:@"wycats/merb-core"];
+            starRepoSwizzle = [[Swizzlean alloc] initWithClassToSwizzle:[FISGithubAPIClient class]];
+            unstarRepoSwizzle = [[Swizzlean alloc] initWithClassToSwizzle:[FISGithubAPIClient class]];
+            checkStarSwizzle = [[Swizzlean alloc] initWithClassToSwizzle:[FISGithubAPIClient class]];
+            [starRepoSwizzle swizzleClassMethod:@selector(starRepoWithFullName:CompletionBlock:) withReplacementImplementation:^(id _self, NSString *fullName, void (^completionBlock)(void)){
+                calledStarRepo=YES;
+                completionBlock();
+            }];
+            [starRepoSwizzle swizzleClassMethod:@selector(unstarRepoWithFullName:CompletionBlock:) withReplacementImplementation:^(id _self, NSString *fullName, void (^completionBlock)(void)){
+                calledUnStarRepo=YES;
+                completionBlock();
+            }];
+
+        });
+
+        beforeEach(^{
+
+            calledCheckStarRepo = NO;
+            calledStarRepo = NO;
+            calledUnStarRepo = NO;
+        });
+
+        it(@"should star a repo if it is unstarred", ^AsyncBlock{
+            [checkStarSwizzle swizzleClassMethod:@selector(checkIfRepoIsStarredWithFullName:CompletionBlock:) withReplacementImplementation:^(id _self, NSString *fullName, void (^completionBlock)(BOOL)){
+                calledCheckStarRepo = YES;
+                expect(fullName).to.equal(mockedRepo.fullName);
+                completionBlock(NO);
+            }];
+
+            FISReposDataStore *dataStore = [[FISReposDataStore alloc] init];
+
+            [dataStore toggleStarForRepo:mockedRepo CompletionBlock:^(BOOL starred) {
+                expect(starred).to.beTruthy();
+                expect(calledStarRepo).to.beTruthy();
+                expect(calledCheckStarRepo).to.beTruthy();
+                expect(calledUnStarRepo).to.beFalsy();
+                done();
+            }];
+
+        });
+
+        it(@"should unstar a repo if it is starred", ^AsyncBlock {
+            [checkStarSwizzle swizzleClassMethod:@selector(checkIfRepoIsStarredWithFullName:CompletionBlock:) withReplacementImplementation:^(id _self, NSString *fullName, void (^completionBlock)(BOOL)){
+                calledCheckStarRepo = YES;
+                expect(fullName).to.equal(mockedRepo.fullName);
+                completionBlock(YES);
+            }];
+
+            FISReposDataStore *dataStore = [[FISReposDataStore alloc] init];
+
+            [dataStore toggleStarForRepo:mockedRepo CompletionBlock:^(BOOL starred) {
+                expect(starred).to.beFalsy();
+                expect(calledStarRepo).to.beFalsy();
+                expect(calledCheckStarRepo).to.beTruthy();
+                expect(calledUnStarRepo).to.beFalsy();
+                done();
+            }];
+        });
+
+        afterEach(^{
+            [checkStarSwizzle resetSwizzledClassMethod];
         });
     });
 

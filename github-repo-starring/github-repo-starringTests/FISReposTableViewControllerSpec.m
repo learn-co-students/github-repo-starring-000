@@ -11,6 +11,7 @@
 #define EXP_SHORTHAND
 #import <Expecta.h>
 #import "FISReposTableViewController.h"
+#import "FISAppDelegate.h"
 
 
 SpecBegin(FISReposTableViewController)
@@ -19,9 +20,10 @@ describe(@"FISReposTableViewController", ^{
 
     __block UITableView *tableView;
     __block UITableViewCell *secondCell;
+    __block NSIndexPath *ip;
     beforeAll(^{
         tableView = (UITableView *)[tester waitForViewWithAccessibilityLabel:@"Repo Table View"];
-        NSIndexPath *ip = [NSIndexPath indexPathForRow:1 inSection:0];
+        ip = [NSIndexPath indexPathForRow:1 inSection:0];
         secondCell = [tester waitForCellAtIndexPath:ip inTableViewWithAccessibilityIdentifier:@"Repo Table View"];
     });
     
@@ -42,6 +44,33 @@ describe(@"FISReposTableViewController", ^{
         
         it(@"Should have the correct cells", ^{
             expect(secondCell.textLabel.text).to.equal(@"wycats/merb-core");
+        });
+    });
+
+    describe(@"Starring/Unstarring Repos", ^{
+        __block FISAppDelegate *delegate;
+
+        beforeAll(^{
+            delegate = [UIApplication sharedApplication].delegate;
+        });
+        it(@"Should star an unstarredRepo", ^{
+            delegate.starred = NO;
+            [tester tapRowAtIndexPath:ip inTableViewWithAccessibilityIdentifier:@"Repo Table View"];
+
+            //This should be in a UIAlertView
+            [tester waitForViewWithAccessibilityLabel:@"You just starred wycats/merb-core"];
+            [tester tapViewWithAccessibilityLabel:@"OK"];
+            [tester waitForAbsenceOfViewWithAccessibilityLabel:@"You just starred wycats/merb-core"];
+        });
+
+        it(@"Should unstar a starred Repo", ^{
+            delegate.starred = YES;
+            [tester tapRowAtIndexPath:ip inTableViewWithAccessibilityIdentifier:@"Repo Table View"];
+
+            //This should be in a UIAlertView
+            [tester waitForViewWithAccessibilityLabel:@"You just unstarred wycats/merb-core"];
+            [tester tapViewWithAccessibilityLabel:@"OK"];
+            [tester waitForAbsenceOfViewWithAccessibilityLabel:@"You just unstarred wycats/merb-core"];
         });
     });
     

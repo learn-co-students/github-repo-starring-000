@@ -27,6 +27,7 @@ PODS:
     - OCHamcrest (~> 3.0)
   - OHHTTPStubs (3.1.1)
   - Specta (0.2.1)
+  - Swizzlean (0.1.1)
 
 DEPENDENCIES:
   - AFNetworking
@@ -35,6 +36,7 @@ DEPENDENCIES:
   - OCMockito (~> 1.0)
   - OHHTTPStubs
   - Specta (~> 0.2.1)
+  - Swizzlean
 
 SPEC CHECKSUMS:
   AFNetworking: ae513199cca79e9d7af2708ccabe2ed075550c42
@@ -44,5 +46,6 @@ SPEC CHECKSUMS:
   OCMockito: 050fca9528760faa8b5fafc82faad9d54f0864c0
   OHHTTPStubs: be1c4263e49191b586d8313dcd6068da6f699d2c
   Specta: 2d06220591110c6d9757d8be8ecf8e63aa40dc2a
+  Swizzlean: 364ac43b04c92f24e352cd701df495c4096674d0
 
 COCOAPODS: 0.32.1
